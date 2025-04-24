@@ -1,0 +1,10 @@
+Mis on Python?: Programmeerimiskeel
+Mis on 2 + 2?: 4
+Mis värvi on taevas selge ilmaga?: sinine
+Mis on Eesti pealinn?: tallinn
+Mis loom on Eesti rahvusloom?: hunt
+Mitut jalga on ämblikul?: 8
+Mis kuu on enne juunit?: mai
+Mis tähestiku täht on 'D' järel?: e
+Kui palju on 10 jagatud 2-ga?: 5
+Mis on vee keemistemperatuur Celsiuse järgi?: 100
