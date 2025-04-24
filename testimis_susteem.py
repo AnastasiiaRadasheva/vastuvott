@@ -5,14 +5,12 @@ from email.message import EmailMessage
 from tkinter import filedialog
 import tkinter as tk
 
-# Failide nimed
 KÜSIMUSED_FAIL = "kusimused_vastused.txt"
 VASTUVÕETUD_FAIL = "vastuvõetud.txt"
 EISOBI_FAIL = "eisoobi.txt"
 KÕIK_FAIL = "koik.txt"
 STATISTIKA_FAIL = "statistika.txt"
 
-# Andmestruktuurid
 testitud_kandidaadid = {}
 sobivad = []
 mittesobivad = []
@@ -66,9 +64,9 @@ def new_quest(quest: str):
         print("Küsimus lisatud!")
     else:
         print("Tühja küsimust või vastust ei saa lisada.")
+    return quest
 
 def salvesta_tulemused():
-    # Funktsioon, mis sorteerib kandidaate, ilma lambda kasutamata
     def sorteerige_sobivad(kandidaadid):
         tulemused = []
         for nimi, punktid in kandidaadid:
@@ -163,6 +161,8 @@ def main():
         print("2. Näita parimaid kandidaate")
         print("3. Lisa uus küsimus")
         print("4. Välju")
+
+
         valik = input("Vali tegevus (1-4): ").strip()
         if valik == "1":
             if len(sobivad) >= 5:
@@ -195,7 +195,7 @@ def main():
                 print(f"{i}. {nimi} - {punktid} punkti")
 
         elif valik == "3":
-            lisa_küsimus()
+            new_quest(quest)
 
         elif valik == "4":
             salvesta_tulemused()
