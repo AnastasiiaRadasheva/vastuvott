@@ -1,5 +1,3 @@
-from testimis_susteem import main
-
+from testimis_susteem import *
 if __name__ == "__main__":
-    print("Testimissüsteem käivitub...")
     main()
