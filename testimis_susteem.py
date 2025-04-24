@@ -18,8 +18,19 @@ sobivad = []
 mittesobivad = []
 
 def loo_email(nimi):
-    eesnimi, perenimi = nimi.lower().split()
-    return f"{eesnimi}.{perenimi}@gmail.com"
+    osad = nimi.lower().split()
+    if len(osad) >= 2:
+        eesnimi = osad[0]
+        perenimi = osad[1]
+    elif len(osad) == 1:
+        eesnimi = osad[0]
+        perenimi = "kandidaat"
+    else:
+        eesnimi = "nimi"
+        perenimi = "puudub"
+    
+    return f"{eesnimi}{perenimi}@gmail.com"
+
 
 def lae_küsimused():
     küsimused = []
@@ -45,8 +56,17 @@ def logi_tulemus(nimi, punktid):
     with open("tulemus_logi.txt", "a", encoding="utf-8") as f:
         f.write(f"{nimi} - {punktid} punkti - {sobivus}\n")
 def new_quest(quest: str):
-    newquest = input('sisesta new küsimus')
-    new 
+    print("\n=== Lisa uus küsimus ===")
+    küsimus = input("Sisesta küsimus: ").strip()
+    vastus = input("Sisesta õige vastus: ").strip().lower()
+
+    if küsimus and vastus:
+        with open(KÜSIMUSED_FAIL, "a", encoding="utf-8") as f:
+            f.write(f"{küsimus}:{vastus}\n")
+        print("Küsimus lisatud!")
+    else:
+        print("Tühja küsimust või vastust ei saa lisada.")
+
 def salvesta_tulemused():
     # Funktsioon, mis sorteerib kandidaate, ilma lambda kasutamata
     def sorteerige_sobivad(kandidaadid):
@@ -138,12 +158,12 @@ def main():
             print(f"Viga e-kirja saatmisel: {e}")
 
     while True:
-        print("\n=== MENÜÜ ===")
+        print("\n---- MENÜÜ ----")
         print("1. Testi uut kandidaati")
         print("2. Näita parimaid kandidaate")
-        print("3. Välju")
-        valik = input("Vali tegevus (1-3): ").strip()
-
+        print("3. Lisa uus küsimus")
+        print("4. Välju")
+        valik = input("Vali tegevus (1-4): ").strip()
         if valik == "1":
             if len(sobivad) >= 5:
                 print("Piisavalt sobivaid kandidaate testitud.")
@@ -175,9 +195,11 @@ def main():
                 print(f"{i}. {nimi} - {punktid} punkti")
 
         elif valik == "3":
+            lisa_küsimus()
+
+        elif valik == "4":
             salvesta_tulemused()
             print("Andmed salvestatud. Head aega!")
             break
-
         else:
             print("Tundmatu valik, proovi uuesti.")
