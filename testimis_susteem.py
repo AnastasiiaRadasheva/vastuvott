@@ -1,19 +1,16 @@
 import random
+import os
 import smtplib
 import ssl
 from email.message import EmailMessage
-from tkinter import filedialog
-import tkinter as tk
 
-KÜSIMUSED_FAIL = "kusimused_vastused.txt"
+# Константы файлов
+KÜSIMUSED_FAIL = "küsimused.txt"
 VASTUVÕETUD_FAIL = "vastuvõetud.txt"
 EISOBI_FAIL = "eisoobi.txt"
 KÕIK_FAIL = "koik.txt"
 STATISTIKA_FAIL = "statistika.txt"
-
-testitud_kandidaadid = {}
-sobivad = []
-mittesobivad = []
+testitud_kandidaadid = []
 
 def loo_email(nimi):
     osad = nimi.lower().split()
@@ -22,7 +19,7 @@ def loo_email(nimi):
         perenimi = osad[1]
     elif len(osad) == 1:
         eesnimi = osad[0]
-        perenimi = "kandidaat"
+        perenimi = ""
     else:
         eesnimi = "nimi"
         perenimi = "puudub"
@@ -39,21 +36,28 @@ def lae_küsimused():
                 küsimused.append((k.strip(), v.strip().lower()))
     return küsimused
 
+
 def testi_kandidaat(nimi, küsimused):
-    valitud = random.sample(küsimused, 5)
-    punktid = 0
-    print(f"\nTest algas: {nimi}")
-    for i, (küsimus, õige_vastus) in enumerate(valitud, 1):
-        vastus = input(f"{nimi}, küsimus {i}: {küsimus} ").strip().lower()
-        if vastus == õige_vastus:
-            punktid += 1
-    return punktid
+    valitud = random.sample(küsimused, 5) 
+    punktid = 0 
+    print(f"\nTest for: {nimi}")
+    
+    for i in range(5): 
+        küsimus, õige_vastus = valitud[i] 
+        vastus = input(f"{nimi}, küsimus {i + 1}: {küsimus} ").strip().lower() 
+        if vastus == õige_vastus:  
+            punktid += 1 
+
+    return punktid 
+
 
 def logi_tulemus(nimi, punktid):
     sobivus = "SOBIB" if punktid >= 3 else "EI SOBI"
     with open("tulemus_logi.txt", "a", encoding="utf-8") as f:
         f.write(f"{nimi} - {punktid} punkti - {sobivus}\n")
-def new_quest(quest: str):
+
+
+def new_quest():
     print("\n=== Lisa uus küsimus ===")
     küsimus = input("Sisesta küsimus: ").strip()
     vastus = input("Sisesta õige vastus: ").strip().lower()
@@ -64,96 +68,95 @@ def new_quest(quest: str):
         print("Küsimus lisatud!")
     else:
         print("Tühja küsimust või vastust ei saa lisada.")
-    return quest
+
 
 def salvesta_tulemused():
-    def sorteerige_sobivad(kandidaadid):
-        tulemused = []
-        for nimi, punktid in kandidaadid:
-            tulemused.append((nimi, punktid))
-        tulemused.sort(key=sorteeri_punktide_jargi, reverse=True)
-        return tulemused
-
-    def sorteerige_punktide_jargi(kandidaat):
-        return kandidaat[1]
-    
-    sobivad_sorted = sorteerige_sobivad(sobivad)
-    mittesobivad_sorted = sorteerige_sobivad(mittesobivad)
+    testitud_sorted = sorted(testitud_kandidaadid, key=soorteerimis_kriteerium)
 
     with open(VASTUVÕETUD_FAIL, "w", encoding="utf-8") as f:
-        for nimi, punktid in sobivad_sorted:
-            f.write(f"{nimi} - {punktid} punkti\n")
-
+        for nimi, punktid, email in testitud_sorted:
+            if punktid >= 3:
+                f.write(f"{nimi} - {punktid} punkti\n")
+    
     with open(EISOBI_FAIL, "w", encoding="utf-8") as f:
-        for nimi, punktid in mittesobivad_sorted:
-            f.write(f"{nimi} - {punktid} punkti\n")
-
+        for nimi, punktid, email in testitud_sorted:
+            if punktid < 3:
+                f.write(f"{nimi} - {punktid} punkti\n")
+    
     with open(KÕIK_FAIL, "w", encoding="utf-8") as f:
-        for nimi, (punktid, email) in testitud_kandidaadid.items():
+        for nimi, punktid, email in testitud_kandidaadid:
             f.write(f"{nimi}, {punktid}, {email}\n")
+    
+    parim = find_best_candidate(testitud_kandidaadid)
 
-    parim = max(testitud_kandidaadid.items(), key=parima_kandidaadi_valik)
     with open(STATISTIKA_FAIL, "w", encoding="utf-8") as f:
         f.write(f"Kokku kandidaate: {len(testitud_kandidaadid)}\n")
-        f.write(f"Edukalt läbinud: {len(sobivad)}\n")
-        f.write(f"Ei sobinud: {len(mittesobivad)}\n")
-        f.write(f"Parim kandidaat: {parim[0]} ({parim[1][0]} punkti)\n")
+        f.write(f"Edukalt läbinud: {len([k for k in testitud_sorted if k[1] >= 3])}\n")
+        f.write(f"Ei sobinud: {len([k for k in testitud_sorted if k[1] < 3])}\n")
+        f.write(f"Parim kandidaat: {parim[0]} ({parim[1]} punkti)\n")
 
-def parima_kandidaadi_valik(kandidaat):
-    return kandidaat[1][0]
+
+def soorteerimis_kriteerium(kandidaat):
+    return kandidaat[1]
+
+
+def find_best_candidate(kandidaadid):
+    best = kandidatid[0] 
+    for kandidaat in kandidatid[1:]:
+        if kandidaat[1] > best[1]: 
+            best = kandidaat
+    return best
+
 
 def saada_epostid():
-    for nimi, (punktid, email) in testitud_kandidaadid.items():
+    for nimi, punktid, email in testitud_kandidaadid:
         print(f"Saadetud {email}: Tere {nimi}, sinu tulemuseks jäi {punktid} punkti.")
-def sortimisalus_punktide_jargi(kandidaat):
-    return kandidaat[1]
+
+
+def saada_tulemus_email(nimi, punktid, email):
+    msg = EmailMessage()
+    msg['Subject'] = 'Sinu testitulemus'
+    msg['From'] = 'eha20082@gmail.com'
+    msg['To'] = email
+
+    text_sisu = f"Tere, {nimi}! Sinu tulemuseks jäi {punktid} punkti."
+
+    if punktid >= 3:
+        html_sisu = f"""\
+        <html>
+        <body>
+            <h1>Tere, {nimi}!</h1>
+            <p>Sa sooritasid testi edukalt – {punktid} punkti!</p>
+            <p>Jätka samas vaimus!</p>
+        </body>
+        </html>
+        """
+    else:
+        html_sisu = f"""\
+        <html>
+        <body>
+            <h1>Tere, {nimi}!</h1>
+            <p>Kahjuks said sa ainult {punktid} punkti.</p>
+            <p>Ära heida meelt – harjutamine teeb meistriks!</p>
+        </body>
+        </html>
+        """
+
+    msg.set_content(text_sisu)
+    msg.add_alternative(html_sisu, subtype='html')
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls(context=ssl.create_default_context())
+            server.login('eha20082@gmail.com', 'pjuj tvvc ogta dxkb')
+            server.send_message(msg)
+        print(f"E-kiri saadetud: {email}")
+    except Exception as e:
+        print(f"Viga e-kirja saatmisel: {e}")
+
+
 def main():
     küsimused = lae_küsimused()
-    
-    # Tkinter akna loomiseks
-    root = tk.Tk()
-    root.withdraw()  # Ei soovi kuvada täiendavat Tkinter akent
-
-    def saada_tulemus_email(nimi, punktid, email):
-        msg = EmailMessage()
-        msg['Subject'] = 'Sinu testitulemus'
-        msg['From'] = 'eha20082@gmail.com'
-        msg['To'] = email
-
-        text_sisu = f"Tere, {nimi}! Sinu tulemuseks jäi {punktid} punkti."
-
-        if punktid >= 3:
-            html_sisu = f"""\
-            <html>
-            <body>
-                <h1>Tere, {nimi}!</h1>
-                <p>Sa sooritasid testi edukalt – {punktid} punkti!</p>
-                <p>Jätka samas vaimus!</p>
-            </body>
-            </html>
-            """
-        else:
-            html_sisu = f"""\
-            <html>
-            <body>
-                <h1>Tere, {nimi}!</h1>
-                <p>Kahjuks said sa ainult {punktid} punkti.</p>
-                <p>Ära heida meelt – harjutamine teeb meistriks!</p>
-            </body>
-            </html>
-            """
-
-        msg.set_content(text_sisu)
-        msg.add_alternative(html_sisu, subtype='html')
-
-        try:
-            with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                server.starttls(context=ssl.create_default_context())
-                server.login('eha20082@gmail.com', 'pjuj tvvc ogta dxkb')
-                server.send_message(msg)
-            print(f"E-kiri saadetud: {email}")
-        except Exception as e:
-            print(f"Viga e-kirja saatmisel: {e}")
 
     while True:
         print("\n---- MENÜÜ ----")
@@ -162,40 +165,35 @@ def main():
         print("3. Lisa uus küsimus")
         print("4. Välju")
 
-
         valik = input("Vali tegevus (1-4): ").strip()
+        
         if valik == "1":
-            if len(sobivad) >= 5:
-                print("Piisavalt sobivaid kandidaate testitud.")
-                continue
-
             nimi = input("\nSisesta kandidaadi nimi (eesnimi perenimi): ").strip().title()
-            if nimi in testitud_kandidaadid:
+            if any(nimi == kandidaat[0] for kandidaat in testitud_kandidaadid):
                 print("See kandidaat on juba testitud.")
                 continue
 
             punktid = testi_kandidaat(nimi, küsimused)
             email = loo_email(nimi)
-            testitud_kandidaadid[nimi] = (punktid, email)
+            testitud_kandidaadid.append((nimi, punktid, email)) 
             logi_tulemus(nimi, punktid)
 
             if punktid >= 3:
-                sobivad.append((nimi, punktid))
                 print(f"{nimi} sobib. Tulemuseks {punktid} punkti.")
             else:
-                mittesobivad.append((nimi, punktid))
                 print(f"{nimi} ei sobi. Tulemuseks {punktid} punkti.")
 
             saada_tulemus_email(nimi, punktid, email)
 
         elif valik == "2":
             print("\n=== PARIMAD KANDIDAADID ===")
-            parimad = sorted(sobivad, key=sortimisalus_punktide_jargi, reverse=True)[:3]
-            for i, (nimi, punktid) in enumerate(parimad, 1):
+         
+            parimad = sorted(testitud_kandidaadid, key=lambda x: x[1], reverse=True)[:3]
+            for i, (nimi, punktid, email) in enumerate(parimad, 1):
                 print(f"{i}. {nimi} - {punktid} punkti")
 
         elif valik == "3":
-            new_quest(quest)
+            new_quest()
 
         elif valik == "4":
             salvesta_tulemused()
