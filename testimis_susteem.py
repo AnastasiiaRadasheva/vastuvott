@@ -187,10 +187,11 @@ def main():
 
         elif valik == "2":
             print("\n=== PARIMAD KANDIDAADID ===")
-         
-            parimad = sorted(testitud_kandidaadid, key=lambda x: x[1], reverse=True)[:3]
+                    
+            parimad = sorted(testitud_kandidaadid, key=võta_punktid, reverse=True)[:3]
             for i, (nimi, punktid, email) in enumerate(parimad, 1):
                 print(f"{i}. {nimi} - {punktid} punkti")
+
 
         elif valik == "3":
             new_quest()
