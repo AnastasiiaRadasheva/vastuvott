@@ -89,12 +89,6 @@ def salvesta_tulemused():
     
     parim = find_best_candidate(testitud_kandidaadid)
 
-    with open(STATISTIKA_FAIL, "w", encoding="utf-8") as f:
-        f.write(f"Kokku kandidaate: {len(testitud_kandidaadid)}\n")
-        f.write(f"Edukalt läbinud: {len([k for k in testitud_sorted if k[1] >= 3])}\n")
-        f.write(f"Ei sobinud: {len([k for k in testitud_sorted if k[1] < 3])}\n")
-        f.write(f"Parim kandidaat: {parim[0]} ({parim[1]} punkti)\n")
-
 
 def soorteerimis_kriteerium(kandidaat):
     return kandidaat[1]
