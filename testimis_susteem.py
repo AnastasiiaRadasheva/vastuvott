@@ -9,7 +9,6 @@ KÜSIMUSED_FAIL = "küsimused.txt"
 VASTUVÕETUD_FAIL = "vastuvõetud.txt"
 EISOBI_FAIL = "eisoobi.txt"
 KÕIK_FAIL = "koik.txt"
-STATISTIKA_FAIL = "statistika.txt"
 testitud_kandidaadid = []
 
 def loo_email(nimi):
