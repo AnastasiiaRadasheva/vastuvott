@@ -141,7 +141,7 @@ def saada_tulemus_email(nimi, punktid, email):
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls(context=ssl.create_default_context())
-            server.login('eha20082@gmail.com', 'pjuj tvvc ogta dxkb')
+            server.login('eha20082@gmail.com', '------')
             server.send_message(msg)
         print(f"E-kiri saadetud: {email}")
     except Exception as e:
